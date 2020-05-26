@@ -84,3 +84,16 @@ FetchOnlyRequestedGameRegion("Messier 82");
 ```
 
 Note `Assert.That` method at the end of the test. An assertion is a condition or statement that you declare to be true.  If the condition turns out to be false, that could indicate a bug in your code. NUnit runs each test method using the inline data you specify and records the result as a passing or failing test.
+
+#### Detached Head issues
+
+```
+git fetch origin
+git reset --hard origin/master
+git clean -f
+git checkout master
+git pull origin
+
+```
+
+More troubleshooting: https://stackoverflow.com/questions/10228760/fix-a-git-detached-head
