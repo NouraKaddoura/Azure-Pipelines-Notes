@@ -32,3 +32,55 @@ Unit testing verifies the most fundamental components of your program or library
 - Choose the right granularity: For example, if you're performing unit testing, an individual test shouldn't combine or test multiple functions or methods. Test each function separately and later write integration tests that verify that multiple components interact properly.
 
 #### For example, you can use Selenium to perform UI testing on many types of web browsers and operating systems.
+
+#### NUnit for unit testing because it's popular in the .NET community
+## Add unit tests to your application
+
+#### Example of Unit Test
+
+C#
+
+```
+
+[TestCase("Milky Way")]
+[TestCase("Andromeda")]
+[TestCase("Pinwheel")]
+[TestCase("NGC 1300")]
+[TestCase("Messier 82")]
+public void FetchOnlyRequestedGameRegion(string gameRegion)
+{
+    const int PAGE = 0; // take the first page of results
+    const int MAX_RESULTS = 10; // sample up to 10 results
+
+    // Form the query predicate.
+    // This expression selects all scores for the provided game region.
+    Expression<Func<Score, bool>> queryPredicate = score => (score.GameRegion == gameRegion);
+
+    // Fetch the scores.
+    Task<IEnumerable<Score>> scoresTask = _scoreRepository.GetItemsAsync(
+        queryPredicate, // the predicate defined above
+        score => 1, // we don't care about the order
+        PAGE,
+        MAX_RESULTS
+    );
+    IEnumerable<Score> scores = scoresTask.Result;
+
+    // Verify that each score's game region matches the provided game region.
+    Assert.That(scores, Is.All.Matches<Score>(score => score.GameRegion == gameRegion));
+}
+
+```
+
+In an NUnit test method, TestCase provides inline data to use to test that method. Here, NUnit calls the FetchOnlyRequestedGameRegion unit test method like this:
+
+```
+
+FetchOnlyRequestedGameRegion("Milky Way");
+FetchOnlyRequestedGameRegion("Andromeda");
+FetchOnlyRequestedGameRegion("Pinwheel");
+FetchOnlyRequestedGameRegion("NGC 1300");
+FetchOnlyRequestedGameRegion("Messier 82");
+
+```
+
+Note `Assert.That` method at the end of the test. An assertion is a condition or statement that you declare to be true.  If the condition turns out to be false, that could indicate a bug in your code. NUnit runs each test method using the inline data you specify and records the result as a passing or failing test.
