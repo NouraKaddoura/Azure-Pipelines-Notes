@@ -97,3 +97,20 @@ git pull origin
 ```
 
 More troubleshooting: https://stackoverflow.com/questions/10228760/fix-a-git-detached-head
+
+#### Switch to unit test branch and pull it from upstream
+
+
+```
+git fetch upstream unit-tests
+git checkout -b unit-tests upstream/unit-tests
+
+```
+
+Run the test locally
+
+```
+dotnet build --configuration Release
+dotnet test --configuration Release --no-build
+
+```
