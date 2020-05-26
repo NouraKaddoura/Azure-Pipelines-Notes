@@ -319,3 +319,143 @@ $HOME/.dotnet/tools/reportgenerator \
   -reporttypes:HtmlInline_AzurePipelines
   
 ```
+
+Copy the file path to view it in the browser: /Users/nourakaddoura/Desktop/DevOpsTraining/microsoftTraining/mslearn-tailspin-spacegame-web/CodeCoverage/index.htm
+
+- Now add the steps the yml file but first create a new branch
+Terminal:
+`git checkout -b code-coverage`
+
+YML:
+
+```
+trigger:
+- '*'
+
+pool:
+  vmImage: 'ubuntu-16.04'
+  demands:
+    - npm
+
+variables:
+  buildConfiguration: 'Release'
+  wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+  dotnetSdkVersion: '3.1.100'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
+  inputs:
+    version: '$(dotnetSdkVersion)'
+
+- task: Npm@1
+  displayName: 'Run npm install'
+  inputs:
+    verbose: false
+
+- script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
+  displayName: 'Compile Sass assets'
+
+- task: gulp@1
+  displayName: 'Run gulp tasks'
+
+- script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
+  displayName: 'Write build info'
+  workingDirectory: $(wwwrootDir)
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build the project - $(buildConfiguration)'
+  inputs:
+    command: 'build'
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Install ReportGenerator'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'install --global dotnet-reportgenerator-globaltool'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests - $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    publishTestResults: true
+    projects: '**/*.Tests.csproj'
+
+- script: |
+    reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines
+  displayName: 'Create code coverage report'
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage report'
+  inputs:
+    codeCoverageTool: 'cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publish the project - $(buildConfiguration)'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: false
+    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  condition: succeeded()
+  
+```
+
+push up to github
+
+```
+git add azure-pipelines.yml
+git commit -m "Add code coverage"
+git push origin code-coverage
+
+```
+
+If you want to add code coverage to the dashboard: https://docs.microsoft.com/en-us/learn/modules/run-quality-tests-build-pipeline/6-perform-code-coverage
+
+remove code coverage folder from root directory: `rm -rf CodeCoverage/`
+
+get the failed branch
+
+#### Fix a failed test
+
+```
+git fetch upstream failed-test
+git checkout -b failed-test upstream/failed-test
+git commit --allow-empty -m "Trigger Azure Pipelines"
+git push origin failed-test
+
+```
+
+see the test failure on azure pipelines.
+
+reproduce the failure locally:
+
+```
+dotnet build --configuration Release
+dotnet test --no-build --configuration Release
+
+
+```
+
+Examine changes and fix the error. in this case Tailspin.SpaceGame.Web/LocalDocumentDBRepository.cs pagesize
+
+Defining build tasks locally first helps you understand and verify the process before you add build tasks to your pipeline.
+
+Remember, the process you followed was specific to .NET Core applications. The tools and tasks that you use depend on the programming language and frameworks that you use to build your applications.
+
+Unit Tests: https://docs.microsoft.com/en-us/learn/modules/run-quality-tests-build-pipeline/9-summary
