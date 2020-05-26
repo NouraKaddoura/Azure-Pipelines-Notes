@@ -267,3 +267,21 @@ This is the piece to add:
 
 **Notice that this task does not specify the --logger trx argument that you used when you ran the tests manually. The publishTestResults argument adds that for you. This argument tells the pipeline to generate the TRX file to a temporary directory, accessible through the $(Agent.TempDirectory) built-in variable. It also publishes the task results to the pipeline.**
 
+Now upload to github to the unit-test branch
+
+```
+git add azure-pipelines.yml
+git commit -m "Run and publish unit tests"
+git push origin unit-tests
+
+```
+![link](https://docs.microsoft.com/en-us/learn/azure-devops/run-quality-tests-build-pipeline/media/4-pipeline-task.png)
+
+When you target .NET Core applications to run on Linux, coverlet  is a popular option. Coverlet is a cross-platform, code-coverage library for .NET Core. Before we add code coverage to the pipeline, let's check in with the team.
+
+[Coverlet](https://github.com/coverlet-coverage/coverlet)
+
+Code coverage. That will tell us the percentage of our code that has unit tests. We can use a tool called "coverlet" to collect coverage information when the tests run.
+
+
+
