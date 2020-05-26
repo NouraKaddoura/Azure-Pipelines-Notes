@@ -283,5 +283,39 @@ When you target .NET Core applications to run on Linux, coverlet  is a popular o
 
 Code coverage. That will tell us the percentage of our code that has unit tests. We can use a tool called "coverlet" to collect coverage information when the tests run.
 
+https://www.nuget.org/packages/coverlet.msbuild
 
 
+verify the process manually first
+
+```
+dotnet tool install --global dotnet-reportgenerator-globaltool --version 4.1.1
+
+dotnet test --no-build \
+  --configuration Release \
+  /p:CollectCoverage=true \
+  /p:CoverletOutputFormat=cobertura \
+  /p:CoverletOutput=./TestResults/Coverage/
+  
+```
+
+#### If the command fails run this:
+
+```
+MSYS2_ARG_CONV_EXCL="*" dotnet test --no-build \
+  --configuration Release \
+  /p:CollectCoverage=true \
+  /p:CoverletOutputFormat=cobertura \
+  /p:CoverletOutput=./TestResults/Coverage/
+  
+```
+
+Run the following `reportgenerator` command to convert the Cobertura file to HTML:
+
+```
+$HOME/.dotnet/tools/reportgenerator \
+  -reports:./Tailspin.SpaceGame.Web.Tests/TestResults/Coverage/coverage.cobertura.xml \
+  -targetdir:./CodeCoverage \
+  -reporttypes:HtmlInline_AzurePipelines
+  
+```
