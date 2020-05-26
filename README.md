@@ -251,3 +251,19 @@ steps:
   condition: succeeded()
   
 ```
+
+This is the piece to add:
+
+```
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests - $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration $(buildConfiguration)'
+    publishTestResults: true
+    projects: '**/*.Tests.csproj'
+    
+```
+
+**Notice that this task does not specify the --logger trx argument that you used when you ran the tests manually. The publishTestResults argument adds that for you. This argument tells the pipeline to generate the TRX file to a temporary directory, accessible through the $(Agent.TempDirectory) built-in variable. It also publishes the task results to the pipeline.**
+
